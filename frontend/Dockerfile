@@ -1,4 +1,11 @@
 # frontend/Dockerfile
+# at top of frontend/Dockerfile build stage
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+
+# then during build, your app's code should read import.meta.env.VITE_API_URL
+# Build command remains: RUN npm run build
+
 # Multi-stage build: build with node, serve with nginx
 FROM node:18-alpine AS build
 
