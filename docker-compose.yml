@@ -1,0 +1,50 @@
+version: "3.8"
+
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: react_node_app
+      MYSQL_USER: radmin
+      MYSQL_PASSWORD: rds-password
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      # make sure these match your backend config
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: radmin
+      DB_PASSWORD: rds-password
+      DB_NAME: react_node_app
+      PORT: 5000
+    depends_on:
+      - db
+    ports:
+      - "5000:5000"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    environment:
+      # If you need to change the backend URL at runtime, prefer building with correct VITE_API_URL
+      # Alternatively you can use an env-to-config approach or replace during CI
+      VITE_API_URL: "http://localhost:5000/api"
+    depends_on:
+      - backend
+
+volumes:
+  db_data:
